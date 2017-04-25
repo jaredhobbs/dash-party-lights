@@ -43,7 +43,6 @@ class PartyTime(Thread):
         self.start()
 
     def base_lights(self):
-        self.enabled = False
         self.bridge.set_group(self.group_name, self.base_light_state)
         time.sleep(1)
 
@@ -62,7 +61,6 @@ class PartyTime(Thread):
         Sets a random light, the next step in the rainbow, defined using the
         hue_point method
         """
-        self.enabled = True
         random.shuffle(self.light_group)
         params = {'sat': 254, 'bri': 254, 'transitiontime': 1}
         i = 0
@@ -74,14 +72,12 @@ class PartyTime(Thread):
 
     def party_off(self):
         # reset to base state
-        if self.enabled:
-            self.enabled = False
-            base = dict(self.base_light_state)
-            base['transitiontime'] = 3
-            for light in self.light_group:
-                self.bridge.set_light(light, base)
-                time.sleep(0.2)
-            self.base_lights()
+        base = dict(self.base_light_state)
+        base['transitiontime'] = 3
+        for light in self.light_group:
+            self.bridge.set_light(light, base)
+            time.sleep(0.2)
+        self.base_lights()
 
     def toggle(self):
         self.enabled = not self.enabled
