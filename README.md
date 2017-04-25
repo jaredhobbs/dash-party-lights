@@ -1,6 +1,11 @@
 # Dash button party lights!
 
 This code reacts to Amazon Dash buttons and is designed for the Raspberry Pi.
+Pressing the Dash button will trigger a party light mode on connected Hue
+lightbulbs. The Dash button code is based on
+[One-Second-Dash](https://github.com/ridiculousfish/one-second-dash)
+and the Hue code is based on this
+[eShares blog post](https://blog.esharesinc.com/how-we-connect-our-office-lights-to-nps-twitter-and-slack/).
 
 The code works by placing your WiFi interface in monitor mode and listening for
 probe requests for a special SSID that does not exist (via tcpdump).
