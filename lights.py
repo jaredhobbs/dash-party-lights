@@ -5,6 +5,7 @@ import signal
 import subprocess
 import sys
 import time
+from threading import Thread
 
 from phue import Bridge
 
@@ -17,8 +18,11 @@ dash_config = config['Dash']
 DEBOUNCE_INTERVAL = config['Debounce']
 
 
-class PartyTime(object):
-    def __init__(self):
+class PartyTime(Thread):
+    def __init__(self, *args, **kwargs):
+        super(PartyTime, self).__init__(*args, **kwargs)
+        self.daemon = True
+
         hue_config = config['Hue']
         self.bridge = Bridge(hue_config['bridge-ip'])
         self.bridge.connect()
@@ -36,6 +40,7 @@ class PartyTime(object):
 
         self.enabled = False
         self.base_lights()
+        self.start()
 
     def base_lights(self):
         self.enabled = False
@@ -52,7 +57,7 @@ class PartyTime(object):
         hue = hue * color
         return hue
 
-    def start(self):
+    def party_on(self):
         """
         Sets a random light, the next step in the rainbow, defined using the
         hue_point method
@@ -67,21 +72,27 @@ class PartyTime(object):
             time.sleep(0.05)
             i += 1
 
-    def stop(self):
+    def party_off(self):
         # reset to base state
-        self.enabled = False
-        base = dict(self.base_light_state)
-        base['transitiontime'] = 3
-        for light in self.light_group:
-            self.bridge.set_light(light, base)
-            time.sleep(0.2)
-        self.base_lights()
+        if self.enabled:
+            self.enabled = False
+            base = dict(self.base_light_state)
+            base['transitiontime'] = 3
+            for light in self.light_group:
+                self.bridge.set_light(light, base)
+                time.sleep(0.2)
+            self.base_lights()
 
     def toggle(self):
-        if not self.enabled:
-            self.start()
-        else:
-            self.stop()
+        self.enabled = not self.enabled
+
+    def run(self):
+        while True:
+            if self.enabled:
+                self.party_on()
+            else:
+                self.party_off()
+            time.sleep(0.1)
 
 
 # Ignore SIGCHLD
